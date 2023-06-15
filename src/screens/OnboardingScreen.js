@@ -15,7 +15,7 @@ const OnboardingScreen = ({navigation}) => {
             <Text style={{fontWeight:600, fontSize:14, color:'rgba(15, 24, 40, 1)'}}>Terms & Privacy Policy</Text>
           </TouchableOpacity>
           <View style={{alignItems: 'center', marginHorizontal:25}}>
-          <TouchableOpacity  activeOpacity={0.7} onPress={() => navigation.navigate('Signup')}
+          <TouchableOpacity  activeOpacity={0.7} onPress={() => navigation.navigate('Login')}
             style={{ marginTop: 15, width:327, height: 50, backgroundColor:'#002DE3', borderRadius:30, justifyContent:'center', alignItems:'center'}}>
             <Text style={{ color: '#F7F7FC', fontSize:16}}>Start Messaging</Text>
           </TouchableOpacity>

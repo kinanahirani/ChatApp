@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,21 +17,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const validationSchema = Yup.object().shape({
   email: Yup.string()
     .email('Invalid email')
-    .matches(
-      /^([a-zA-Z0-9]+)([\-\_\.]*)([a-zA-Z0-9]*)([@])([a-zA-Z0-9]{2,})([\.][a-zA-Z]{2,3})$/,
-      'Please enter valid email.',
-    )
     .required('Email is required'),
   password: Yup.string()
     .min(6, 'Password must be at least 6 characters')
-    .matches(
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$.!%*#?&])[A-Za-z\d@$.!%*#?&]{6,}$/,
-      'Must contain 1 uppercase, 1 lowercase, 1 special character and 1 digit character.',
-    )
     .required('Password is required'),
 });
 
 const Login = ({navigation}) => {
+
   const handleLogin = async values => {
     const {email, password} = values;
 
@@ -65,7 +58,7 @@ const Login = ({navigation}) => {
   const goToNext=async(email,password)=>{
     await AsyncStorage.setItem('EMAIL',email)
     await AsyncStorage.setItem('PASSWORD',password)
-    navigation.navigate('Contacts screen')
+    navigation.navigate('Bottom Tab')
   }
 
   return (

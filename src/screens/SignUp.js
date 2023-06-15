@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
-import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import uuid from 'react-native-uuid';
 
@@ -51,18 +50,6 @@ const Signup = ({navigation}) => {
         console.log('Error:', error);
       });
   };
-
-  // const handleSignup = async values => {
-  //   const {email, password} = values;
-  //   try {
-  //     // Create user with Firebase authentication
-  //     await auth().createUserWithEmailAndPassword(email, password);
-  //     await navigation.navigate('Contacts screen'); // Navigate to next screen after successful signup
-  //   } catch (error) {
-  //     console.log('Signup Error:', error);
-  //     // Handle signup error here (e.g., show error message)
-  //   }
-  // };
 
   return (
     <View style={styles.container}>
@@ -176,7 +163,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(247, 247, 252, 1)',
     elevation: 3,
     marginBottom: 5,
-    // Add your input field styles here
   },
   errorText: {
     marginTop: 4,
@@ -190,6 +176,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 30,
-    // marginHorizontal: 24,
   },
 });

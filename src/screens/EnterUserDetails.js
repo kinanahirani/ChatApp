@@ -74,7 +74,7 @@ const EnterUserDetails = ({navigation}) => {
             marginTop: 81,
             marginHorizontal: 24,
           }}
-          onPress={()=>navigation.navigate('Contacts screen')}>
+          onPress={()=>navigation.navigate('Bottom Tab')}>
           <Text style={{color: '#F7F7FC', fontSize: 16}}>Save</Text>
         </TouchableOpacity>
       </View>
