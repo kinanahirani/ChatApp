@@ -6,9 +6,42 @@ import {
   TouchableOpacity,
   TextInput,
 } from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
+import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EnterUserDetails = ({navigation}) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
+  const handleSave = () => {
+    updateUserDetails(firstName, lastName);
+    navigation.navigate('Bottom Tab');
+  };
+
+  const updateUserDetails = async (firstName, lastName) => {
+    try {
+      const userId = await AsyncStorage.getItem('USER_ID');
+      const updateData = {};
+
+      if (firstName) {
+        updateData.firstName = firstName;
+      }
+
+      if (lastName) {
+        updateData.lastName = lastName;
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        await firestore().collection('users').doc(userId).update(updateData);
+        console.log('User details updated in Firestore');
+      } else {
+        console.log('No fields to update');
+      }
+    } catch (error) {
+      console.log('Error updating user details in Firestore:', error);
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={{flexDirection: 'row'}}>
@@ -43,24 +76,29 @@ const EnterUserDetails = ({navigation}) => {
             />
           </View>
         </View>
-        <View style={{marginTop:33}}>
+        <View style={{marginTop: 33}}>
           <TextInput
             placeholder="First Name (Required)"
+            value={firstName}
+            onChangeText={text => setFirstName(text)}
             style={{
               backgroundColor: '#F7F7FC',
               width: 327,
               height: 36,
               borderRadius: 4,
-              marginBottom:12
-            }}></TextInput>
+              marginBottom: 12,
+            }}
+          />
           <TextInput
             placeholder="Last Name (Optional)"
+            onChangeText={text => setLastName(text)}
             style={{
               backgroundColor: '#F7F7FC',
               width: 327,
               height: 36,
               borderRadius: 4,
-            }}></TextInput>
+            }}
+          />
         </View>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -74,7 +112,7 @@ const EnterUserDetails = ({navigation}) => {
             marginTop: 81,
             marginHorizontal: 24,
           }}
-          onPress={()=>navigation.navigate('Bottom Tab')}>
+          onPress={() => handleSave()}>
           <Text style={{color: '#F7F7FC', fontSize: 16}}>Save</Text>
         </TouchableOpacity>
       </View>

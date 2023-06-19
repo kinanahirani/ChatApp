@@ -10,6 +10,7 @@ import {
 import {Formik} from 'formik';
 import * as Yup from 'yup';
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
 
 const validationSchema = Yup.object().shape({
@@ -30,25 +31,51 @@ const validationSchema = Yup.object().shape({
 });
 
 const Signup = ({navigation}) => {
+  // const registerUser = (values) => {
 
-  const registerUser = (values) => {
+  //   const {email, password} = values;
+  //   const userId = uuid.v4();
+  //   firestore()
+  //     .collection('users')
+  //     .doc(userId)
+  //     .set({
+  //       email: email,
+  //       password: password,
+  //       userId: userId,
+  //     })
+  //     .then(() => {
+  //       console.log('user created');
+  //       navigation.navigate('Enter Profile Info')
+  //     })
+  //     .catch(error => {
+  //       console.log('Error:', error);
+  //     });
+  // };
+
+  const registerUser = async values => {
     const {email, password} = values;
-    const userId = uuid.v4();
-    firestore()
-      .collection('users')
-      .doc(userId)
-      .set({
-        email: email,
-        password: password,
-        userId: userId,
-      })
-      .then(() => {
-        console.log('user created');
-        navigation.navigate('Enter Profile Info')
-      })
-      .catch(error => {
-        console.log('Error:', error);
-      });
+
+    try {
+      const {user} = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
+      );
+
+      if (user) {
+        const userId = user.uid;
+
+        await firestore().collection('users').doc(userId).set({
+          email: email,
+          userId: userId,
+          password: password,
+        });
+
+        console.log('User created');
+        navigation.navigate('Enter Profile Info');
+      }
+    } catch (error) {
+      console.log('Error:', error);
+    }
   };
 
   return (
@@ -89,7 +116,7 @@ const Signup = ({navigation}) => {
           </Text>
           <Formik
             initialValues={{email: '', password: ''}}
-            onSubmit={(values)=>registerUser(values)}
+            onSubmit={values => registerUser(values)}
             validationSchema={validationSchema}>
             {({
               handleChange,

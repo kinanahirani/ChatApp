@@ -25,10 +25,19 @@ const SplashScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image source={require('../images/logo.png')} style={styles.logo} />
+        <View style={{}}>
+          <Image source={require('../images/logo.png')} style={styles.logo} />
+          {/* <View style={{flexDirection: 'row', justifyContent:'space-evenly', alignItems:'center'}}>
+            <Image source={require('../images/bluedot.png')} />
+            <Image source={require('../images/bluedot.png')} />
+            <Image source={require('../images/bluedot.png')} />
+          </View> */}
+        </View>
       </View>
     </View>
   );
+
+  
 };
 
 export default SplashScreen;

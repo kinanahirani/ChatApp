@@ -7,14 +7,17 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  SafeAreaView,
+  KeyboardAvoidingView
 } from 'react-native';
 import ContactBox from '../components/ContactBox';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AddStory from '../components/AddStory';
+import CChat from '../components/CChat';
 
 const Contacts = ({navigation}) => {
   return (
-    <View style={{flex: 1, backgroundColor: 'rgba(255, 255, 255, 1)'}}>
+    <KeyboardAvoidingView style={{flex: 1, backgroundColor: 'rgba(255, 255, 255, 1)'}} behavior='height'>
       <View
         style={{
           flexDirection: 'row',
@@ -57,9 +60,9 @@ const Contacts = ({navigation}) => {
           />
           <TextInput placeholder="Search" style={styles.searchInput} />
         </View>
-        <ContactBox navigation={navigation} />
-        <ContactBox navigation={navigation} />
-        <ContactBox navigation={navigation} />
+        <CChat navigation={navigation} />
+        <CChat navigation={navigation} />
+        <CChat navigation={navigation} />
         {/* <View style={{marginVertical:20, flexDirection:'row', width:'90%', borderBottomWidth:1, borderBottomColor:'#EDEDED'}}>
           <Image source={require('../images/dp.png')} style={{borderRadius:16, marginBottom:16}}/>
           <View style={{marginLeft:16}}>
@@ -67,7 +70,7 @@ const Contacts = ({navigation}) => {
             <Text style={{marginTop:5, color:'#ADB5BD', fontWeight:'400', fontSize:12}}>Last seen yesterday</Text>
           </View> */}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
