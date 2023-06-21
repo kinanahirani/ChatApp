@@ -12,6 +12,7 @@ import BottomTabNavigator from './BottomTabNavigator';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from '../screens/SplashScreen';
+import Chats from '../screens/Chats';
 
 const Stack=createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Enter OTP" component={EnterOtp}/>
         <Stack.Screen name="Enter Profile Info" component={EnterUserDetails}/>
         <Stack.Screen name="Contacts screen" component={Contacts}/>
+        <Stack.Screen name="Chats screen" component={Chats}/>
         <Stack.Screen name="Chat screen" component={ChatScreen}/>
         <Stack.Screen name="Login" component={Login}/>
         <Stack.Screen name="Signup" component={Signup}/>

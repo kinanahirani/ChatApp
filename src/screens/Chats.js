@@ -15,7 +15,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import AddStory from '../components/AddStory';
 import CChat from '../components/CChat';
 
-const Contacts = ({navigation}) => {
+const Chats = ({navigation}) => {
   return (
     <KeyboardAvoidingView style={{flex: 1, backgroundColor: 'rgba(255, 255, 255, 1)'}} behavior='height'>
       <View
@@ -74,7 +74,7 @@ const Contacts = ({navigation}) => {
   );
 };
 
-export default Contacts;
+export default Chats;
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -95,3 +95,4 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
 });
+

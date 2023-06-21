@@ -46,6 +46,7 @@ const EnterUserDetails = ({navigation}) => {
     <View style={styles.container}>
       <View style={{flexDirection: 'row'}}>
         <TouchableOpacity
+          onPress={() => navigation.goBack()}
           activeOpacity={0.5}
           style={{marginTop: 20, marginLeft: 24}}>
           <Image source={require('../images/back-icon.png')} />

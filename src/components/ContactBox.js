@@ -1,13 +1,13 @@
 import {View, Text, Image, ScrollView, TouchableOpacity} from 'react-native';
 import React from 'react';
 
-const ContactBox = ({navigation}) => {
+const ContactBox = ({navigation, user}) => {
   return (
     <View
       style={{
         marginTop: 20,
         flexDirection: 'row',
-        width: '90%',
+        width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: '#EDEDED',
       }}>
@@ -22,7 +22,8 @@ const ContactBox = ({navigation}) => {
         onPress={() => navigation.navigate('Chat screen')}>
         <View style={{marginLeft: 16}}>
           <Text style={{fontWeight: '600', fontSize: 14, color: '#0F1828'}}>
-            Athalia Putri
+            {user.firstName} {user.lastName}
+            {/* Athalia Putri */}
           </Text>
           <Text
             style={{
@@ -40,3 +41,5 @@ const ContactBox = ({navigation}) => {
 };
 
 export default ContactBox;
+
+

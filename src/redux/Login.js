@@ -33,12 +33,10 @@ const Login = ({navigation}) => {
     const {email, password} = values;
 
     try {
-      // Authenticate user with Firebase authentication
       await auth().signInWithEmailAndPassword(email, password);
       await navigation.navigate('Contacts screen');
     } catch (error) {
       console.log('Login Error:', error);
-      // Handle login error here (e.g., show error message)
     }
   };
 
