@@ -19,6 +19,7 @@ const Settings = ({navigation}) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [pic, setPic] = useState(null);
 
   const fetchUserDetails = async () => {
     try {
@@ -31,10 +32,12 @@ const Settings = ({navigation}) => {
         const fetchedFirstName = userData.firstName || '';
         const fetchedLastName = userData.lastName || '';
         const fetchedEmail = userData.email || '';
+        const fetchedProfilePic = userData.profilePicture || null;
 
         setFirstName(fetchedFirstName);
         setLastName(fetchedLastName);
         setEmail(fetchedEmail);
+        setPic(fetchedProfilePic);
       } else {
         console.log('User document does not exist');
       }
@@ -70,18 +73,26 @@ const Settings = ({navigation}) => {
       </View>
       <View
         style={{alignItems: 'center', flexDirection: 'row', marginBottom: 31}}>
-        <View
-          style={{
-            marginLeft: 16,
-            width: 50,
-            height: 50,
-            backgroundColor: '#EDEDED',
-            borderRadius: 50,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <AntDesign name="user" size={20} color={'rgba(15, 24, 40, 1)'} />
-        </View>
+        {pic ? (
+          <Image
+            style={{height: 50, width: 50, marginLeft: 16, borderRadius: 50}}
+            source={{uri: pic}}
+          />
+        ) : (
+          <View
+            style={{
+              marginLeft: 16,
+              width: 50,
+              height: 50,
+              backgroundColor: '#EDEDED',
+              borderRadius: 50,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <AntDesign name="user" size={20} color={'rgba(15, 24, 40, 1)'} />
+          </View>
+        )}
+
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => navigation.navigate('Enter Profile Info')}>

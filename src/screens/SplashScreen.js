@@ -25,14 +25,8 @@ const SplashScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <View style={{}}>
-          <Image source={require('../images/logo.png')} style={styles.logo} />
-          {/* <View style={{flexDirection: 'row', justifyContent:'space-evenly', alignItems:'center'}}>
-            <Image source={require('../images/bluedot.png')} />
-            <Image source={require('../images/bluedot.png')} />
-            <Image source={require('../images/bluedot.png')} />
-          </View> */}
-        </View>
+          <Text style={{color:'black', fontWeight:'bold', fontSize:40}}>Chateo</Text>
+          {/* <Image source={require('../images/logo.png')} style={styles.logo} /> */}
       </View>
     </View>
   );
@@ -54,6 +48,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    // Add any additional styles for the logo image here
   },
 });

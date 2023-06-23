@@ -6,12 +6,12 @@ const OnboardingScreen = ({navigation}) => {
     <View style={styles.container}>
       <View style={styles.wrapper}>
         <Image source={require('../images/Illustration.png')} />
-        <View style={{width: 250, height: 90, marginTop: 40}}>
+        <View style={{width: 250, height: 90, marginTop: '5%'}}>
           <Text style={styles.text}>
             Connect easily with your family and friends over countries
           </Text>
           <TouchableOpacity activeOpacity={0.7}
-            style={{alignItems: 'center', marginTop: 120, height: 24}}>
+            style={{alignItems: 'center', marginTop: '20%', height: 24}}>
             <Text style={{fontWeight:600, fontSize:14, color:'rgba(15, 24, 40, 1)'}}>Terms & Privacy Policy</Text>
           </TouchableOpacity>
           <View style={{alignItems: 'center', marginHorizontal:25}}>

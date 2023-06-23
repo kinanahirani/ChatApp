@@ -12,24 +12,11 @@ import {
 import ContactBox from '../components/ContactBox';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const Contacts = ({navigation}) => {
   const [users, setUsers] = useState([]);
   const [searchText, setSearchText] = useState('');
-
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     try {
-  //       const usersSnapshot = await firestore().collection('users').get();
-  //       const usersData = usersSnapshot.docs.map(doc => doc.data());
-  //       setUsers(usersData);
-  //     } catch (error) {
-  //       console.error('Error fetching users:', error);
-  //     }
-  //   };
-
-  //   fetchUsers();
-  // }, []);
 
   useEffect(() => {
     getUsers();
@@ -53,9 +40,9 @@ const Contacts = ({navigation}) => {
       });
   };
 
-  const filteredUsers = users.filter(user =>
-    user.firstName.toLowerCase().includes(searchText.toLowerCase()),
-  );
+  // const filteredUsers = users.filter(user =>
+  //   user.firstName.toLowerCase().includes(searchText.toLowerCase()),
+  // );
 
   return (
     <View style={{flex: 1, backgroundColor: 'rgba(255, 255, 255, 1)'}}>
@@ -95,7 +82,7 @@ const Contacts = ({navigation}) => {
             onChangeText={setSearchText}
           />
         </View>
-        <ScrollView
+        <View
           style={{
             width: '90%',
           }}>
@@ -112,18 +99,36 @@ const Contacts = ({navigation}) => {
                     borderBottomColor: '#EDEDED',
                   }}>
                   <TouchableOpacity activeOpacity={0.7}>
-                    <Image
-                      source={require('../images/dp.png')}
-                      style={{
-                        borderRadius: 16,
-                        marginBottom: 16,
-                        borderRadius: 30,
-                      }}
-                    />
+                    {item.profilePicture ? (
+                      <Image
+                        source={{uri: item.profilePicture}}
+                        style={{
+                          height: 48,
+                          width: 48,
+                          marginBottom: 12,
+                          borderRadius: 30,
+                        }}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          backgroundColor: 'rgba(237, 237, 237, 1)',
+                          width: 48,
+                          height: 48,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 30,
+                          marginBottom: 12,
+                        }}>
+                        <AntDesign name="user" size={24} color={'black'} />
+                      </View>
+                    )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.6}
-                    onPress={() => navigation.navigate('Chat screen', {data:item, id:id})}>
+                    onPress={() =>
+                      navigation.navigate('Chat screen', {data: item, id: id})
+                    }>
                     <View style={{marginLeft: 16}}>
                       <Text
                         style={{
@@ -151,7 +156,7 @@ const Contacts = ({navigation}) => {
           {/* {filteredUsers.map(user => (
             <ContactBox key={user.userId} navigation={navigation} user={user} />
           ))} */}
-        </ScrollView>
+        </View>
         {/* <View style={{marginVertical:20, flexDirection:'row', width:'90%', borderBottomWidth:1, borderBottomColor:'#EDEDED'}}>
           <Image source={require('../images/dp.png')} style={{borderRadius:16, marginBottom:16}}/>
           <View style={{marginLeft:16}}>
@@ -181,6 +186,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
+    color: 'black',
     paddingVertical: 10,
   },
 });

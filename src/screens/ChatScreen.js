@@ -1,106 +1,99 @@
 import React, {useEffect, useState, useCallback} from 'react';
 import {View, StyleSheet, TouchableOpacity, Image, Text} from 'react-native';
-import {GiftedChat, InputToolbar, Composer} from 'react-native-gifted-chat';
+import {GiftedChat} from 'react-native-gifted-chat';
 import firestore from '@react-native-firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import auth from '@react-native-firebase/auth';
 import {useRoute} from '@react-navigation/native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const ChatScreen = ({navigation}) => {
   const route = useRoute();
   const [messages, setMessages] = useState([]);
-  const [userId, setUserId] = useState(null);
-
-  // useEffect(() => {
-  //   const getUserId = async () => {
-  //     try {
-  //       const storedUserId = await AsyncStorage.getItem('USER_ID');
-  //       setUserId(storedUserId);
-  //     } catch (error) {
-  //       console.error('Error retrieving user ID:', error);
-  //     }
-  //   };
-
-  //   getUserId();
-  // }, []);
-
-  // useEffect(() => {
-  //   const unsubscribe = firestore()
-  //     .collection('chats')
-  //     .orderBy('createdAt', 'desc')
-  //     .onSnapshot(querySnapshot => {
-  //       const data = querySnapshot.docs.map(doc => ({
-  //         _id: doc.id,
-  //         createdAt: doc.data().createdAt.toDate(),
-  //         text: doc.data().text,
-  //         user: doc.data().user,
-  //       }));
-  //       setMessages(data);
-  //     });
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  // const onSend = async (newMessages = []) => {
-  //   const messagesToBeSent = newMessages.map(message => ({
-  //     _id: message._id,
-  //     createdAt: message.createdAt,
-  //     text: message.text,
-  //     user: message.user,
-  //   }));
-
-  //   try {
-  //     await Promise.all(
-  //       messagesToBeSent.map(message =>
-  //         firestore().collection('chats').add({
-  //           _id: message._id,
-  //           createdAt: message.createdAt,
-  //           text: message.text,
-  //           user: message.user,
-  //         }),
-  //       ),
-  //     );
-  //   } catch (error) {
-  //     console.error('Error sending message: ', error);
-  //   }
-  // };
+  const [userDetails, setUserDetails] = useState(null);
 
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1,
-        text: 'Hello developer',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-      },
-    ]);
+    const getUserDetails = async () => {
+      try {
+        const userSnapshot = await firestore()
+          .collection('users')
+          .doc(route.params.data.userId)
+          .get();
+
+        if (userSnapshot.exists) {
+          setUserDetails(userSnapshot.data());
+        } else {
+          console.log('not getting the data');
+        }
+      } catch {
+        console.log('Error fetching user details:', error);
+      }
+    };
+
+    getUserDetails();
   }, []);
 
-  const onSend = useCallback(async (messages = []) => {
-    const msg = messages[0];
-    const myMsg = {
-      ...msg,
+  useEffect(() => {
+    const chatId1 = `${route.params.id}-${route.params.data.userId}`;
+    const chatId2 = `${route.params.data.userId}-${route.params.id}`;
+
+    const subscriber = firestore()
+      .collection('chats')
+      .doc(chatId1)
+      .collection('messages')
+      .orderBy('createdAt', 'desc')
+      .onSnapshot(querySnapshot => {
+        const allMessages = querySnapshot.docs.map(doc => {
+          const {_id, text, createdAt, user} = doc.data();
+          return {
+            _id,
+            text,
+            createdAt: createdAt.toDate(),
+            user,
+          };
+        });
+        setMessages(allMessages);
+      });
+
+    return () => subscriber();
+  }, []);
+
+  const onSend = useCallback(async (newMessages = []) => {
+    const msg = newMessages[0];
+    const chatId1 = `${route.params.id}-${route.params.data.userId}`;
+    const chatId2 = `${route.params.data.userId}-${route.params.id}`;
+
+    const message = {
+      _id: msg._id,
+      text: msg.text,
       senderId: route.params.id,
       receiverId: route.params.data.userId,
-      createdAt: Date.parse(msg.createdAt),
+      createdAt: firestore.Timestamp.fromDate(msg.createdAt),
+      user: msg.user,
     };
-    setMessages(previousMessages => GiftedChat.append(previousMessages, myMsg));
-    firestore()
-      .collection('chats')
-      .doc('' + route.params.id + route.params.data.userId)
-      .collection('messages')
-      .add(myMsg);
 
-    firestore()
-      .collection('chats')
-      .doc('' + route.params.data.userId + route.params.id)
-      .collection('messages')
-      .add(myMsg);
+    try {
+      await Promise.all([
+        firestore()
+          .collection('chats')
+          .doc(chatId1)
+          .collection('messages')
+          .add(message),
+        firestore()
+          .collection('chats')
+          .doc(chatId2)
+          .collection('messages')
+          .add(message),
+      ]);
+    } catch (error) {
+      console.error('Error sending message: ', error);
+    }
   }, []);
+
+  let avatar;
+  if (userDetails && userDetails.profilePicture) {
+    avatar = userDetails.profilePicture
+  } else {
+    avatar = 'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+  }
 
   return (
     <View style={styles.container}>
@@ -111,7 +104,9 @@ const ChatScreen = ({navigation}) => {
             style={styles.backIcon}
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Kinana Hirani</Text>
+        <Text style={styles.headerTitle}>
+          {route.params.data.firstName} {route.params.data.lastName}
+        </Text>
         <View style={styles.iconContainer}>
           <TouchableOpacity style={styles.icon}>
             <Image
@@ -127,27 +122,18 @@ const ChatScreen = ({navigation}) => {
           </TouchableOpacity>
         </View>
       </View>
-      {/* <GiftedChat
-        messages={messages}
-        showAvatarForEveryMessage={false}
-        showUserAvatar={false}
-        onSend={onSend}
-        messagesContainerStyle={{
-          backgroundColor: 'rgba(247, 247, 252, 1)',
-        }}
-        user={{
-          _id: userId,
-          avatar: 'https://i.pravatar.cc/300',
-        }}
-      /> */}
+
       <GiftedChat
         messages={messages}
+        showAvatarForEveryMessage={true}
+        showUserAvatar={false}
         messagesContainerStyle={{
           backgroundColor: 'rgba(247, 247, 252, 1)',
         }}
         onSend={messages => onSend(messages)}
         user={{
           _id: route.params.id,
+          avatar: avatar
         }}
       />
     </View>
