@@ -1,15 +1,13 @@
 import {View, Text, Image, ScrollView, TouchableOpacity} from 'react-native';
 import React from 'react';
 
-const CChat = ({navigation, chatB}) => {
+const CChat = ({navigation, chat}) => {
   return (
     <View
       style={{
         marginTop: 20,
         flexDirection: 'row',
         width: '90%',
-        // borderBottomWidth: 1,
-        // borderBottomColor: '#EDEDED',
       }}>
       <TouchableOpacity activeOpacity={0.7}>
         <Image
@@ -19,7 +17,7 @@ const CChat = ({navigation, chatB}) => {
       </TouchableOpacity>
       <TouchableOpacity
         activeOpacity={0.6}
-        onPress={() => navigation.navigate('Chat screen')}>
+        onPress={() => navigation.navigate('Chat screen', {data: item, id: id})}>
         <View style={{marginLeft: 16, marginTop: 2}}>
           <Text style={{fontWeight: '600', fontSize: 14, color: '#0F1828'}}>
             Kinana Hirani
