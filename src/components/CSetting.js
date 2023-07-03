@@ -87,7 +87,7 @@ const CSetting = ({icon, name, iconName}) => {
   };
 
   return (
-    <TouchableOpacity activeOpacity={0.7}>
+    // <TouchableOpacity activeOpacity={0.7}>
       <View style={styles.container}>
         <View style={styles.iconContainer}>{renderIcon()}</View>
         <Text style={styles.text}>{name}</Text>
@@ -99,7 +99,7 @@ const CSetting = ({icon, name, iconName}) => {
           />
         </View>
       </View>
-    </TouchableOpacity>
+    // </TouchableOpacity>
   );
 };
 

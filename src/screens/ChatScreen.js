@@ -1,9 +1,9 @@
 import React, {useEffect, useState, useCallback} from 'react';
 import {View, StyleSheet, TouchableOpacity, Image, Text} from 'react-native';
-import {GiftedChat} from 'react-native-gifted-chat';
+import {GiftedChat, Composer} from 'react-native-gifted-chat';
 import firestore from '@react-native-firebase/firestore';
 import {useRoute} from '@react-navigation/native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChatScreen = ({navigation}) => {
   const route = useRoute();
@@ -13,13 +13,31 @@ const ChatScreen = ({navigation}) => {
   useEffect(() => {
     const getUserDetails = async () => {
       try {
-        const userSnapshot = await firestore()
-          .collection('users')
-          .doc(route.params.data.userId)
-          .get();
+        if (route.params.id) {
+          console.log('IN If Block');
+          const userSnapshot = await firestore()
+            .collection('users')
+            .doc(route.params.id)
+            .get();
 
-        if (userSnapshot.exists) {
-          setUserDetails(userSnapshot.data());
+          if (userSnapshot.exists) {
+            setUserDetails(userSnapshot.data());
+            // console.log(userDetails,"..userDetails");
+            // console.log(route.params.id,".....route.params.id");
+            // console.log(userSnapshot.data(), '......userSnapshot');
+          }
+        } else if (route.params.data.senderId) {
+          console.log('IN Else Block');
+          const userSnapshot1 = await firestore()
+            .collection('users')
+            .doc(route.params.data.senderId)
+            .get();
+
+          if (userSnapshot1.exists) {
+            // console.log(route.params.data.senderId,"...route.params.data.senderId");
+            setUserDetails(userSnapshot1.data());
+            // console.log(userSnapshot1.data(), '......userSnapshot1');
+          }
         } else {
           console.log('not getting the data');
         }
@@ -32,8 +50,23 @@ const ChatScreen = ({navigation}) => {
   }, []);
 
   useEffect(() => {
-    const chatId1 = `${route.params.id}-${route.params.data.userId}`;
-    const chatId2 = `${route.params.data.userId}-${route.params.id}`;
+    let receiver;
+    console.log(route.params.data, '....data');
+    if (route.params.data.userId) {
+      receiver = route.params.data.userId;
+    } else {
+      receiver = route.params.data.receiverId;
+    }
+
+    let sender;
+    if (route.params.id) {
+      sender = route.params.id;
+    } else {
+      sender = route.params.data.senderId;
+    }
+
+    const chatId1 = `${sender}-${receiver}`;
+    const chatId2 = `${receiver}-${sender}`;
 
     const subscriber = firestore()
       .collection('chats')
@@ -51,48 +84,170 @@ const ChatScreen = ({navigation}) => {
           };
         });
         setMessages(allMessages);
+        console.log(messages, 'messages when renders');
       });
-
     return () => subscriber();
-  }, []);
+  }, [route.params.id, route.params.data]);
 
-  const onSend = useCallback(async (newMessages = []) => {
-    const msg = newMessages[0];
-    const chatId1 = `${route.params.id}-${route.params.data.userId}`;
-    const chatId2 = `${route.params.data.userId}-${route.params.id}`;
+  const onSend = useCallback(
+    async (newMessages = []) => {
+      let firstName;
+      let lastName;
 
-    const message = {
-      _id: msg._id,
-      text: msg.text,
-      senderId: route.params.id,
-      receiverId: route.params.data.userId,
-      createdAt: firestore.Timestamp.fromDate(msg.createdAt),
-      user: msg.user,
-    };
+      if (userDetails) {
+        firstName = userDetails.firstName;
+        lastName = userDetails.lastName;
+      } else {
+        firstName = 'Unknown';
+        lastName = 'User';
+      }
 
-    try {
-      await Promise.all([
-        firestore()
-          .collection('chats')
-          .doc(chatId1)
-          .collection('messages')
-          .add(message),
-        firestore()
-          .collection('chats')
-          .doc(chatId2)
-          .collection('messages')
-          .add(message),
-      ]);
-    } catch (error) {
-      console.error('Error sending message: ', error);
-    }
-  }, []);
+      let receiver;
+      if (route.params.data.userId) {
+        receiver = route.params.data.userId;
+      } else {
+        receiver = route.params.data.receiverId;
+      }
+      let sender;
+      if (route.params.id) {
+        sender = route.params.id;
+      } else {
+        sender = route.params.data.senderId;
+      }
+
+      const msg = newMessages[0];
+      const chatId1 = `${sender}-${receiver}`;
+      const chatId2 = `${receiver}-${sender}`;
+
+      const message = {
+        _id: msg._id,
+        text: msg.text,
+        senderId: sender,
+        receiverId: receiver,
+        createdAt: firestore.Timestamp.fromDate(msg.createdAt),
+        user: msg.user,
+      };
+      if (userDetails) {
+        console.log(userDetails.firstName, '...userDetails.firstName1');
+        console.log(userDetails.lastName, '...userDetails.lastName1');
+      } else {
+        console.log('User details are null');
+      }
+
+      try {
+        await Promise.all([
+          firestore()
+            .collection('chats')
+            .doc(chatId1)
+            .collection('messages')
+            .add({
+              ...message,
+              firstName: route.params.data.firstName || firstName,
+              lastName: route.params.data.lastName || lastName,
+            }),
+          firestore()
+            .collection('chats')
+            .doc(chatId2)
+            .collection('messages')
+            .add({
+              ...message,
+              firstName: route.params.data.firstName || firstName,
+              lastName: route.params.data.lastName || lastName,
+              // firstName: userDetails.firstName,
+              // lastName: userDetails.lastName,
+            }),
+        ]);
+
+        const chatUsersRef1 = firestore()
+          .collection('chatUsers')
+          .doc('list')
+          .collection(sender)
+          .doc(receiver);
+
+        let profilePictureReceiver;
+        if (route.params.data.profilePicture) {
+          profilePictureReceiver = route.params.data.profilePicture;
+        } else {
+          profilePictureReceiver =
+            'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+        }
+
+        chatUsersRef1.get().then(res => {
+          if (res.exists) {
+            chatUsersRef1.update({
+              ...message,
+              firstName: route.params.data.firstName,
+              lastName: route.params.data.lastName,
+              profilePicture: profilePictureReceiver,
+            });
+          } else {
+            chatUsersRef1.set({
+              ...message,
+              firstName: route.params.data.firstName,
+              lastName: route.params.data.lastName,
+              profilePicture: profilePictureReceiver,
+            });
+          }
+        });
+
+        const chatUsersRef2 = firestore()
+          .collection('chatUsers')
+          .doc('list')
+          .collection(receiver)
+          .doc(sender);
+
+        chatUsersRef2.get().then(async res => {
+          const firstName = await AsyncStorage.getItem('FNAME');
+          console.log(firstName, '..firstName');
+          console.log(userDetails.firstName, '..userDetails.firstName');
+          const lastName = await AsyncStorage.getItem('LNAME');
+          console.log(lastName, '..lastName');
+          console.log(userDetails.lastName, '...userDetails.lastName');
+          const profilePictureString = await AsyncStorage.getItem(
+            'PROFILE_PIC',
+          );
+          let profilePicture;
+          if (profilePictureString) {
+            profilePicture = JSON.parse(profilePictureString);
+          } else {
+            profilePicture =
+              'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+          }
+          console.log(
+            userDetails.profilePicture,
+            '...userDetails.profilePicture2',
+          );
+          if (res.exists) {
+            chatUsersRef2.update({
+              ...message,
+              firstName: firstName,
+              lastName: lastName,
+              profilePic: profilePicture,
+            });
+          } else {
+            chatUsersRef2.set({
+              ...message,
+              firstName: firstName,
+              lastName: lastName,
+              profilePic: profilePicture,
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error sending message: ', error);
+      }
+    },
+    [route.params, userDetails],
+  );
+
+  const renderChatEmpty = () => <View style={styles.emptyChatContainer}></View>;
 
   let avatar;
   if (userDetails && userDetails.profilePicture) {
-    avatar = userDetails.profilePicture
+    avatar = userDetails.profilePicture;
   } else {
-    avatar = 'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+    avatar =
+      'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
   }
 
   return (
@@ -123,19 +278,28 @@ const ChatScreen = ({navigation}) => {
         </View>
       </View>
 
-      <GiftedChat
-        messages={messages}
-        showAvatarForEveryMessage={true}
-        showUserAvatar={false}
-        messagesContainerStyle={{
-          backgroundColor: 'rgba(247, 247, 252, 1)',
-        }}
-        onSend={messages => onSend(messages)}
-        user={{
-          _id: route.params.id,
-          avatar: avatar
-        }}
-      />
+      <View style={{flex: 1}}>
+        <Image
+          source={require('../images/chat_bg.png')}
+          style={styles.backgroundImage}
+          resizeMode="cover"
+        />
+        <GiftedChat
+          messages={messages}
+          showAvatarForEveryMessage={true}
+          showUserAvatar={false}
+          // messagesContainerStyle={{
+          //   backgroundColor: 'rgba(247, 247, 252, 1)',
+          // }}
+          onSend={messages => onSend(messages)}
+          user={{
+            _id: route.params.id,
+            avatar: avatar,
+          }}
+          renderChatEmpty={renderChatEmpty}
+          // keyExtractor={message => message._id.toString()}
+        />
+      </View>
     </View>
   );
 };
@@ -171,6 +335,18 @@ const styles = StyleSheet.create({
   },
   iconImage: {
     marginTop: 6.4,
+  },
+  emptyChatContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
   },
 });
 

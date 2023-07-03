@@ -12,6 +12,7 @@ import * as Yup from 'yup';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -69,13 +70,22 @@ const Signup = ({navigation}) => {
           userId: userId,
           password: password,
         });
-
+        goToNext(email, password, userId);
         console.log('User created');
         navigation.navigate('Enter Profile Info');
       }
     } catch (error) {
       console.log('Error:', error);
     }
+  };
+
+  const goToNext = async (email, password, userId) => {
+    // let authData = { email,password,userId};
+    // await AsyncStorage.setItem('userData', JSON.stringify(authData));
+    await AsyncStorage.setItem('EMAIL', email);
+    await AsyncStorage.setItem('PASSWORD', password);
+    await AsyncStorage.setItem('USER_ID', userId);
+    navigation.navigate('Enter Profile Info');
   };
 
   return (
@@ -125,12 +135,14 @@ const Signup = ({navigation}) => {
               values,
               errors,
               touched,
+              isSubmitting,
             }) => (
               <View>
                 <TextInput
                   placeholder="Email"
                   style={styles.input}
                   onChangeText={handleChange('email')}
+                  returnKeyType='next'
                   onBlur={handleBlur('email')}
                   value={values.email}
                 />
@@ -142,6 +154,7 @@ const Signup = ({navigation}) => {
                   placeholder="Password"
                   secureTextEntry={true}
                   style={styles.input}
+                  returnKeyType='next'
                   onChangeText={handleChange('password')}
                   onBlur={handleBlur('password')}
                   value={values.password}
@@ -152,8 +165,11 @@ const Signup = ({navigation}) => {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={handleSubmit}
-                  style={styles.button}>
-                  <Text style={{color: '#F7F7FC', fontSize: 16}}>Signup</Text>
+                  style={styles.button}
+                  disabled={isSubmitting}>
+                  <Text style={{color: '#F7F7FC', fontSize: 16}}>
+                    {isSubmitting ? 'Signup...' : 'Signup'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}

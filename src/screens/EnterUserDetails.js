@@ -105,14 +105,22 @@ const EnterUserDetails = ({navigation}) => {
       const updateData = {};
 
       if (firstName) {
+        await AsyncStorage.setItem('FNAME', firstName);
+        // console.log(firstName,"..firstName");
         updateData.firstName = firstName;
       }
 
       if (lastName) {
+        await AsyncStorage.setItem('LNAME', lastName);
+        // console.log(lastName, "..lastName");
         updateData.lastName = lastName;
       }
 
       if (profilePicture) {
+        await AsyncStorage.setItem(
+          'PROFILE_PIC',
+          profilePicture,
+        );
         updateData.profilePicture = profilePicture;
       }
 

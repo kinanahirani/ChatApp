@@ -8,11 +8,15 @@ import {
   View,
   ScrollView,
   TouchableHighlight,
+  Modal,
+  Alert,
+  Pressable
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import CSetting from '../components/CSetting';
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Settings = ({navigation}) => {
@@ -20,6 +24,7 @@ const Settings = ({navigation}) => {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [pic, setPic] = useState(null);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const fetchUserDetails = async () => {
     try {
@@ -53,6 +58,24 @@ const Settings = ({navigation}) => {
 
     return unsubscribe;
   }, [navigation]);
+
+  const handleLogout = async () => {
+    try {
+      // await auth().signOut();
+      // await AsyncStorage.removeItem('EMAIL');
+      // await AsyncStorage.removeItem('PASSWORD');
+      // await AsyncStorage.removeItem('USER_ID');
+      // await AsyncStorage.removeItem('FNAME');
+      // await AsyncStorage.removeItem('LNAME');
+      // if (await AsyncStorage.getItem('PROFILE_PIC')) {
+      //   await AsyncStorage.removeItem('PROFILE_PIC');
+      // }
+      await AsyncStorage.clear();
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Logout Error', error);
+    }
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: 'rgba(255, 255, 255, 1)'}}>
@@ -120,30 +143,6 @@ const Settings = ({navigation}) => {
         </View>
       </View>
 
-      {/* 
-      <View style={{alignItems: 'center', flexDirection: 'row'}}>
-        <View
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 50,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <AntDesign name="user" size={20} color={'rgba(15, 24, 40, 1)'} />
-        </View>
-        <Text style={{color:'#0F1828', fontWeight:'600', fontSize:14}}>Account</Text>
-        <View style={{marginLeft:'auto', marginRight:24}}>
-          <TouchableOpacity activeOpacity={0.7}>
-            <Feather
-              name="chevron-right"
-              size={20}
-              color={'rgba(15, 24, 40, 1)'}
-            />
-          </TouchableOpacity>
-        </View>
-      </View> */}
-
       <CSetting icon={'AntDesign'} name={'Account'} iconName={'user'} />
       <CSetting
         icon={'Ionicons'}
@@ -176,6 +175,38 @@ const Settings = ({navigation}) => {
         name={'Invite Your Friends'}
         iconName={'forward-to-inbox'}
       />
+
+      <Modal
+        animationType='fade'
+        transparent={true}
+        visible={logoutModalVisible}
+        onRequestClose={() => {
+          setLogoutModalVisible(false);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Are you sure you want to logout?</Text>
+            <View style={{flexDirection:'row'}}>
+            <Pressable
+              style={[styles.button, styles.buttonOpen, {marginRight:10}]}
+              onPress={handleLogout}>
+              <Text style={styles.textStyle}>Yes</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => setLogoutModalVisible(false)}>
+              <Text style={styles.textStyle}>No</Text>
+            </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => setLogoutModalVisible(true)}>
+        <CSetting icon={'MaterialIcons'} name={'Logout'} iconName={'logout'} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -200,4 +231,48 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
   },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor:'rgba(0, 0, 0, 0.5)'
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    width:70
+  },
+  buttonOpen: {
+    backgroundColor: 'red',
+  },
+  buttonClose: {
+    backgroundColor: 'gray',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    fontSize:16,
+    fontWeight:'600',
+    textAlign: 'center',
+  },  
 });

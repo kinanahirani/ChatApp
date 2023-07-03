@@ -37,12 +37,10 @@ const Contacts = ({navigation}) => {
           });
         }
         setUsers(tempData);
+        console.log(tempData, "..temp users in contacts");
+        console.log(id, "id of sender");
       });
   };
-
-  // const filteredUsers = users.filter(user =>
-  //   user.firstName.toLowerCase().includes(searchText.toLowerCase()),
-  // );
 
   return (
     <View style={{flex: 1, backgroundColor: 'rgba(255, 255, 255, 1)'}}>
@@ -91,6 +89,7 @@ const Contacts = ({navigation}) => {
             renderItem={({item, index}) => {
               return (
                 <View
+                key={index}
                   style={{
                     marginTop: 20,
                     flexDirection: 'row',
@@ -127,7 +126,7 @@ const Contacts = ({navigation}) => {
                   <TouchableOpacity
                     activeOpacity={0.6}
                     onPress={() =>
-                      navigation.navigate('Chat screen', {data: item, id: id})
+                      navigation.navigate('Chat screen', {data: item, id: id, screen:'contact'})
                     }>
                     <View style={{marginLeft: 16}}>
                       <Text
