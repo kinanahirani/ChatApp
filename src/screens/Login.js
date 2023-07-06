@@ -189,7 +189,7 @@
 //   },
 // });
 
-import React from 'react';
+import React,{useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -198,12 +198,14 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Keyboard
 } from 'react-native';
 import {Formik} from 'formik';
 import * as Yup from 'yup';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -213,7 +215,18 @@ const validationSchema = Yup.object().shape({
 });
 
 const Login = ({navigation}) => {
+  const [token, setToken] = useState('');
+
+  async function getToken() {
+    let token = await messaging().getToken();
+    setToken(token);
+  }
+  useEffect(() => {
+    getToken();
+  }, []);
+
   const handleLogin = async (values, {setSubmitting}) => {
+    Keyboard.dismiss();
     const {email, password} = values;
 
     try {
@@ -223,14 +236,22 @@ const Login = ({navigation}) => {
         const userDoc = await firestore()
           .collection('users')
           .doc(user.uid)
-          .get();
+          .get()
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              const updatedUserDoc = await firestore().collection('users').doc(user.uid).update({ token: token });
+              goToNext(userData.email, userData.password, userData.userId);
+            } else {
+              Alert.alert('User not found!');
+            }
+          // })
 
-        if (userDoc.exists) {
-          const userData = userDoc.data();
-          goToNext(userData.email, userData.password, userData.userId);
-        } else {
-          Alert.alert('User not found!');
-        }
+        // if (userDoc.exists) {
+        //   const userData = userDoc.data();
+        //   goToNext(userData.email, userData.password, userData.userId);
+        // } else {
+        //   Alert.alert('User not found!');
+        // }
       } else {
         Alert.alert('Wrong credentials!');
       }
@@ -359,6 +380,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: 'rgba(247, 247, 252, 1)',
     elevation: 3,
+    color:'black',
     marginBottom: 5,
     paddingHorizontal: 10,
     height: 40,

@@ -42,7 +42,6 @@ const Chats = ({navigation}) => {
           };
         });
         setChattedUsers(allMsg);
-        console.log(allMsg);
         setUserId(userId);
       });
     } catch (err) {
@@ -94,7 +93,7 @@ const Chats = ({navigation}) => {
           />
           <TextInput placeholder="Search" style={styles.searchInput} />
         </View>
-        {chattedUsers &&
+        {chattedUsers ? (
           chattedUsers.map(item => (
             <View
               key={item._id}
@@ -119,6 +118,18 @@ const Chats = ({navigation}) => {
                 <TouchableOpacity activeOpacity={0.7}>
                   <Image
                     source={{uri: item.profilePic.path}}
+                    style={{
+                      marginBottom: 12,
+                      borderRadius: 30,
+                      height: 56,
+                      width: 56,
+                    }}
+                  />
+                </TouchableOpacity>
+              ) : item.profilePic ? (
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Image
+                    source={{uri: item.profilePicture}}
                     style={{
                       marginBottom: 12,
                       borderRadius: 30,
@@ -167,7 +178,19 @@ const Chats = ({navigation}) => {
                 </View>
               </TouchableOpacity>
             </View>
-          ))}
+          ))
+        ) : (
+          <View style={{justifyContent: 'center', alignItems: 'center'}}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: 'black',
+                fontWeight: 'bold',
+              }}>
+              No chats to show here.
+            </Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );

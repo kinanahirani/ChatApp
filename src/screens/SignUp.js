@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Image,
+  Keyboard,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
@@ -12,6 +13,7 @@ import * as Yup from 'yup';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import uuid from 'react-native-uuid';
+import messaging from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const validationSchema = Yup.object().shape({
@@ -32,23 +34,44 @@ const validationSchema = Yup.object().shape({
 });
 
 const Signup = ({navigation}) => {
+  const [token, setToken] = useState('');
+  useEffect(() => {
+    getToken();
+  }, []);
+
+  async function getToken() {
+    let token = await messaging().getToken();
+    setToken(token);
+  }
+
   // const registerUser = (values) => {
 
   //   const {email, password} = values;
   //   const userId = uuid.v4();
+  //   // const userId = user.uid;
+
   //   firestore()
   //     .collection('users')
   //     .doc(userId)
   //     .set({
-  //       email: email,
+  //       email: email.toLowerCase(),
   //       password: password,
   //       userId: userId,
+  //       token:token
   //     })
   //     .then(() => {
   //       console.log('user created');
+  //       goToNext(email, password, userId);
   //       navigation.navigate('Enter Profile Info')
   //     })
   //     .catch(error => {
+  //       if (error.code === 'auth/email-already-in-use') {
+  //         console.log('That email address is already in use!');
+  //       }
+
+  //       if (error.code === 'auth/invalid-email') {
+  //         console.log('That email address is invalid!');
+  //       }
   //       console.log('Error:', error);
   //     });
   // };
@@ -69,12 +92,20 @@ const Signup = ({navigation}) => {
           email: email,
           userId: userId,
           password: password,
+          token: token,
         });
         goToNext(email, password, userId);
         console.log('User created');
         navigation.navigate('Enter Profile Info');
       }
     } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        console.log('That email address is already in use!');
+      }
+
+      if (error.code === 'auth/invalid-email') {
+        console.log('That email address is invalid!');
+      }
       console.log('Error:', error);
     }
   };
@@ -142,7 +173,7 @@ const Signup = ({navigation}) => {
                   placeholder="Email"
                   style={styles.input}
                   onChangeText={handleChange('email')}
-                  returnKeyType='next'
+                  returnKeyType="next"
                   onBlur={handleBlur('email')}
                   value={values.email}
                 />
@@ -154,7 +185,7 @@ const Signup = ({navigation}) => {
                   placeholder="Password"
                   secureTextEntry={true}
                   style={styles.input}
-                  returnKeyType='next'
+                  returnKeyType="next"
                   onChangeText={handleChange('password')}
                   onBlur={handleBlur('password')}
                   value={values.password}
@@ -168,7 +199,7 @@ const Signup = ({navigation}) => {
                   style={styles.button}
                   disabled={isSubmitting}>
                   <Text style={{color: '#F7F7FC', fontSize: 16}}>
-                    {isSubmitting ? 'Signup...' : 'Signup'}
+                    {isSubmitting ? 'Signing up...' : 'Signup'}
                   </Text>
                 </TouchableOpacity>
               </View>

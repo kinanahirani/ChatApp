@@ -1,26 +1,27 @@
 import React, {useState, useEffect} from 'react';
 import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
   View,
-  ScrollView,
+  Image,
+  Text,
   FlatList,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
 import ContactBox from '../components/ContactBox';
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const Contacts = ({navigation}) => {
+  const isFocused = useIsFocused();
   const [users, setUsers] = useState([]);
   const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     getUsers();
-  }, []);
+  }, [isFocused]);
 
   const getUsers = async () => {
     id = await AsyncStorage.getItem('USER_ID');
@@ -37,8 +38,6 @@ const Contacts = ({navigation}) => {
           });
         }
         setUsers(tempData);
-        console.log(tempData, "..temp users in contacts");
-        console.log(id, "id of sender");
       });
   };
 
@@ -126,7 +125,7 @@ const Contacts = ({navigation}) => {
                   <TouchableOpacity
                     activeOpacity={0.6}
                     onPress={() =>
-                      navigation.navigate('Chat screen', {data: item, id: id, screen:'contact'})
+                      navigation.navigate('Chat screen', {item: item, id: id, screen:'contact'})
                     }>
                     <View style={{marginLeft: 16}}>
                       <Text

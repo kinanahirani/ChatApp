@@ -4,17 +4,49 @@ import {GiftedChat, Composer} from 'react-native-gifted-chat';
 import firestore from '@react-native-firebase/firestore';
 import {useRoute} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+import axios from 'axios';
 
 const ChatScreen = ({navigation}) => {
   const route = useRoute();
   const [messages, setMessages] = useState([]);
   const [userDetails, setUserDetails] = useState(null);
+  const [token, setToken] = useState('');
+  const defaultImg =
+    'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+
+  console.log(JSON.stringify(route.params), 'route.params');
+
+  const onMessageReceived = ({message}) => {
+    // Get the user details for the sender of the message.
+    const getUserDetails = async () => {
+      console.log(message.senderId,"message.senderId");
+      const userSnapshot = await firestore()
+        .collection('users')
+        .doc(message.senderId)
+        .get();
+
+      if (userSnapshot.exists) {
+        setUserDetails(userSnapshot.data());
+      }
+    };
+    getUserDetails();
+  };
+
+
+  useEffect(() => {
+    getToken();
+  }, []);
+
+  const getToken = async () => {
+    let token = await messaging().getToken();
+    setToken(token);
+  };
 
   useEffect(() => {
     const getUserDetails = async () => {
       try {
         if (route.params.id) {
-          console.log('IN If Block');
           const userSnapshot = await firestore()
             .collection('users')
             .doc(route.params.id)
@@ -22,21 +54,19 @@ const ChatScreen = ({navigation}) => {
 
           if (userSnapshot.exists) {
             setUserDetails(userSnapshot.data());
-            // console.log(userDetails,"..userDetails");
-            // console.log(route.params.id,".....route.params.id");
-            // console.log(userSnapshot.data(), '......userSnapshot');
           }
         } else if (route.params.data.senderId) {
-          console.log('IN Else Block');
           const userSnapshot1 = await firestore()
             .collection('users')
             .doc(route.params.data.senderId)
             .get();
 
           if (userSnapshot1.exists) {
-            // console.log(route.params.data.senderId,"...route.params.data.senderId");
-            setUserDetails(userSnapshot1.data());
-            // console.log(userSnapshot1.data(), '......userSnapshot1');
+            setUserDetails({
+              ...userSnapshot1.data(),
+              firstName: route.params.data.firstName,
+              lastName: route.params.data.lastName,
+            });
           }
         } else {
           console.log('not getting the data');
@@ -45,16 +75,18 @@ const ChatScreen = ({navigation}) => {
         console.log('Error fetching user details:', error);
       }
     };
-
     getUserDetails();
   }, []);
 
   useEffect(() => {
     let receiver;
-    console.log(route.params.data, '....data');
-    if (route.params.data.userId) {
-      receiver = route.params.data.userId;
+    if (route.params.item) {
+      receiver = route.params.item.userId;
     } else {
+      console.log(
+        route.params.data.receiverId,
+        '...route.params.data.receiverId',
+      );
       receiver = route.params.data.receiverId;
     }
 
@@ -87,24 +119,53 @@ const ChatScreen = ({navigation}) => {
         console.log(messages, 'messages when renders');
       });
     return () => subscriber();
-  }, [route.params.id, route.params.data]);
+  }, [route.params.id, route.params.data, route.params.item]);
+
+  const sendNotifications = async (token, messageText, id) => {
+    var NotiFicationData = JSON.stringify({
+      notification: {
+        body: messageText,
+        title: route.params.item.firstName || route.params.data.firstName,
+      },
+      data: {
+        messageId: id,
+      },
+      to: token,
+    });
+
+    axios
+      .post('https://fcm.googleapis.com/fcm/send', NotiFicationData, {
+        headers: {
+          Authorization:
+            'Bearer AAAAQtNff-8:APA91bHkBx4BHauuE9-ywCYS6rcozQ4NSfXK1yFrqubGv3ZRoeeVCWU3RWZHIFLLmsQnGYWhaCQJxk_b_f5CuHTsZINtPq1nL3vDijp2dxAB_FSLH450oe9xZyeXsQHJf19d-xkdSzJ7',
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(function (res) {
+        console.log(JSON.stringify(res.data), 'Notification Data:');
+      })
+      .catch(function (err) {
+        console.log(err, 'errrr');
+      });
+  };
 
   const onSend = useCallback(
     async (newMessages = []) => {
       let firstName;
       let lastName;
+      const uniqId = Math.random().toString().substr(2, 10);
 
       if (userDetails) {
         firstName = userDetails.firstName;
         lastName = userDetails.lastName;
       } else {
-        firstName = 'Unknown';
-        lastName = 'User';
+        firstName = route.params.data.firstName || 'Unknown';
+        lastName = route.params.data.lastName || 'User';
       }
 
       let receiver;
-      if (route.params.data.userId) {
-        receiver = route.params.data.userId;
+      if (route.params.item) {
+        receiver = route.params.item.userId;
       } else {
         receiver = route.params.data.receiverId;
       }
@@ -119,11 +180,19 @@ const ChatScreen = ({navigation}) => {
       const chatId1 = `${sender}-${receiver}`;
       const chatId2 = `${receiver}-${sender}`;
 
+      let token;
+      if (route.params.item) {
+        token = route.params.item.token;
+      } else if (route.params.data) {
+        token = route.params.data.token;
+      }
+
       const message = {
         _id: msg._id,
         text: msg.text,
         senderId: sender,
         receiverId: receiver,
+        token: token,
         createdAt: firestore.Timestamp.fromDate(msg.createdAt),
         user: msg.user,
       };
@@ -142,8 +211,8 @@ const ChatScreen = ({navigation}) => {
             .collection('messages')
             .add({
               ...message,
-              firstName: route.params.data.firstName || firstName,
-              lastName: route.params.data.lastName || lastName,
+              firstName: route.params.item?.firstName || firstName,
+              lastName: route.params.item?.lastName || lastName,
             }),
           firestore()
             .collection('chats')
@@ -151,12 +220,18 @@ const ChatScreen = ({navigation}) => {
             .collection('messages')
             .add({
               ...message,
-              firstName: route.params.data.firstName || firstName,
-              lastName: route.params.data.lastName || lastName,
+              firstName: route.params.item?.firstName || firstName,
+              lastName: route.params.item?.lastName || lastName,
               // firstName: userDetails.firstName,
               // lastName: userDetails.lastName,
             }),
         ]);
+
+        sendNotifications(
+          route.params.item.token || route.params.data.token,
+          msg.text,
+          uniqId,
+        );
 
         const chatUsersRef1 = firestore()
           .collection('chatUsers')
@@ -165,26 +240,29 @@ const ChatScreen = ({navigation}) => {
           .doc(receiver);
 
         let profilePictureReceiver;
-        if (route.params.data.profilePicture) {
-          profilePictureReceiver = route.params.data.profilePicture;
+        if (route.params.item.profilePicture) {
+          profilePictureReceiver = route.params.item.profilePicture;
         } else {
-          profilePictureReceiver =
-            'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+          profilePictureReceiver = defaultImg;
         }
 
         chatUsersRef1.get().then(res => {
           if (res.exists) {
             chatUsersRef1.update({
               ...message,
-              firstName: route.params.data.firstName,
-              lastName: route.params.data.lastName,
+              firstName:
+                route.params.item.firstName || route.params.data.firstName,
+              lastName:
+                route.params.item.lastName || route.params.data.lastName,
               profilePicture: profilePictureReceiver,
             });
           } else {
             chatUsersRef1.set({
               ...message,
-              firstName: route.params.data.firstName,
-              lastName: route.params.data.lastName,
+              firstName:
+                route.params.item.firstName || route.params.data.firstName,
+              lastName:
+                route.params.item.lastName || route.params.data.lastName,
               profilePicture: profilePictureReceiver,
             });
           }
@@ -198,11 +276,7 @@ const ChatScreen = ({navigation}) => {
 
         chatUsersRef2.get().then(async res => {
           const firstName = await AsyncStorage.getItem('FNAME');
-          console.log(firstName, '..firstName');
-          console.log(userDetails.firstName, '..userDetails.firstName');
           const lastName = await AsyncStorage.getItem('LNAME');
-          console.log(lastName, '..lastName');
-          console.log(userDetails.lastName, '...userDetails.lastName');
           const profilePictureString = await AsyncStorage.getItem(
             'PROFILE_PIC',
           );
@@ -210,25 +284,24 @@ const ChatScreen = ({navigation}) => {
           if (profilePictureString) {
             profilePicture = JSON.parse(profilePictureString);
           } else {
-            profilePicture =
-              'https://firebasestorage.googleapis.com/v0/b/chatapp-ddd26.appspot.com/o/Profile%20Pictures%2Fdefault.png?alt=media&token=57345098-ef98-44e7-bf3c-f701f41a4486';
+            profilePicture = defaultImg;
           }
-          console.log(
-            userDetails.profilePicture,
-            '...userDetails.profilePicture2',
-          );
           if (res.exists) {
             chatUsersRef2.update({
               ...message,
               firstName: firstName,
+              // || route.params.data.firstName,
               lastName: lastName,
+              // || route.params.data.lastName,
               profilePic: profilePicture,
             });
           } else {
             chatUsersRef2.set({
               ...message,
               firstName: firstName,
+              // || route.params.data.firstName,
               lastName: lastName,
+              // || route.params.data.lastName,
               profilePic: profilePicture,
             });
           }
@@ -260,8 +333,18 @@ const ChatScreen = ({navigation}) => {
           />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {route.params.data.firstName} {route.params.data.lastName}
+          {route.params.item?.firstName || route.params.data?.firstName}{' '}
+          {route.params.item?.lastName || route.params.data?.lastName}
         </Text>
+        {/* {route.params.item.firstName ? (
+          <Text style={styles.headerTitle}>
+            {route.params.item.firstName} {route.params.item.lastName}
+          </Text>
+        ) :(
+          <Text style={styles.headerTitle}>
+            {route.params.data.firstName} {route.params.data.lastName}
+          </Text>
+        )} */}
         <View style={styles.iconContainer}>
           <TouchableOpacity style={styles.icon}>
             <Image
@@ -288,6 +371,7 @@ const ChatScreen = ({navigation}) => {
           messages={messages}
           showAvatarForEveryMessage={true}
           showUserAvatar={false}
+          onMessageReceived={onMessageReceived}
           // messagesContainerStyle={{
           //   backgroundColor: 'rgba(247, 247, 252, 1)',
           // }}
