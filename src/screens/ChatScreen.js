@@ -20,7 +20,7 @@ const ChatScreen = ({navigation}) => {
   const onMessageReceived = ({message}) => {
     // Get the user details for the sender of the message.
     const getUserDetails = async () => {
-      console.log(message.senderId,"message.senderId");
+      console.log(message.senderId, 'message.senderId');
       const userSnapshot = await firestore()
         .collection('users')
         .doc(message.senderId)
@@ -32,7 +32,6 @@ const ChatScreen = ({navigation}) => {
     };
     getUserDetails();
   };
-
 
   useEffect(() => {
     getToken();
