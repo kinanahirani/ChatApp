@@ -10,7 +10,7 @@ import {
   TouchableHighlight,
   Modal,
   Alert,
-  Pressable
+  Pressable,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
@@ -64,7 +64,8 @@ const Settings = ({navigation}) => {
       // await auth().signOut();
       // await AsyncStorage.removeItem('EMAIL');
       // await AsyncStorage.removeItem('PASSWORD');
-      // await AsyncStorage.removeItem('USER_ID');
+      const uid=await AsyncStorage.getItem('USER_ID');
+      await firestore().collection('users').doc(uid).update({token:''})
       // await AsyncStorage.removeItem('FNAME');
       // await AsyncStorage.removeItem('LNAME');
       // if (await AsyncStorage.getItem('PROFILE_PIC')) {
@@ -143,70 +144,76 @@ const Settings = ({navigation}) => {
         </View>
       </View>
 
-      <CSetting icon={'AntDesign'} name={'Account'} iconName={'user'} />
-      <CSetting
-        icon={'Ionicons'}
-        name={'Chats'}
-        iconName={'chatbubble-outline'}
-      />
-      <CSetting icon={'Feather'} name={'Appereance'} iconName={'sun'} />
-      <CSetting
-        icon={'MaterialIcons'}
-        name={'Notification'}
-        iconName={'notifications-none'}
-      />
-      <CSetting
-        icon={'MaterialCommunityIcons'}
-        name={'Privacy'}
-        iconName={'shield-alert-outline'}
-      />
-      <CSetting
-        icon={'MaterialCommunityIcons'}
-        name={'Data Usage'}
-        iconName={'folder-outline'}
-      />
-      <CSetting
-        icon={'MaterialIcons'}
-        name={'Help'}
-        iconName={'help-outline'}
-      />
-      <CSetting
-        icon={'MaterialIcons'}
-        name={'Invite Your Friends'}
-        iconName={'forward-to-inbox'}
-      />
-
-      <Modal
-        animationType='fade'
-        transparent={true}
-        visible={logoutModalVisible}
-        onRequestClose={() => {
-          setLogoutModalVisible(false);
-        }}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Are you sure you want to logout?</Text>
-            <View style={{flexDirection:'row'}}>
-            <Pressable
-              style={[styles.button, styles.buttonOpen, {marginRight:10}]}
-              onPress={handleLogout}>
-              <Text style={styles.textStyle}>Yes</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => setLogoutModalVisible(false)}>
-              <Text style={styles.textStyle}>No</Text>
-            </Pressable>
+      <ScrollView showsVerticalScrollIndicator={false} >
+        <CSetting icon={'AntDesign'} name={'Account'} iconName={'user'} />
+        <CSetting
+          icon={'Ionicons'}
+          name={'Chats'}
+          iconName={'chatbubble-outline'}
+        />
+        <CSetting icon={'Feather'} name={'Appereance'} iconName={'sun'} />
+        <CSetting
+          icon={'MaterialIcons'}
+          name={'Notification'}
+          iconName={'notifications-none'}
+        />
+        <CSetting
+          icon={'MaterialCommunityIcons'}
+          name={'Privacy'}
+          iconName={'shield-alert-outline'}
+        />
+        <CSetting
+          icon={'MaterialCommunityIcons'}
+          name={'Data Usage'}
+          iconName={'folder-outline'}
+        />
+        <CSetting
+          icon={'MaterialIcons'}
+          name={'Help'}
+          iconName={'help-outline'}
+        />
+        <CSetting
+          icon={'MaterialIcons'}
+          name={'Invite Your Friends'}
+          iconName={'forward-to-inbox'}
+        />
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={logoutModalVisible}
+          onRequestClose={() => {
+            setLogoutModalVisible(false);
+          }}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                Are you sure you want to logout?
+              </Text>
+              <View style={{flexDirection: 'row'}}>
+                <Pressable
+                  style={[styles.button, styles.buttonOpen, {marginRight: 10}]}
+                  onPress={handleLogout}>
+                  <Text style={styles.textStyle}>Yes</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setLogoutModalVisible(false)}>
+                  <Text style={styles.textStyle}>No</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => setLogoutModalVisible(true)}>
-        <CSetting icon={'MaterialIcons'} name={'Logout'} iconName={'logout'} />
-      </TouchableOpacity>
+        </Modal>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => setLogoutModalVisible(true)}>
+          <CSetting
+            icon={'MaterialIcons'}
+            name={'Logout'}
+            iconName={'logout'}
+          />
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
@@ -235,7 +242,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor:'rgba(0, 0, 0, 0.5)'
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalView: {
     margin: 20,
@@ -256,7 +263,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     elevation: 2,
-    width:70
+    width: 70,
   },
   buttonOpen: {
     backgroundColor: 'red',
@@ -271,8 +278,8 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    fontSize:16,
-    fontWeight:'600',
+    fontSize: 16,
+    fontWeight: '600',
     textAlign: 'center',
-  },  
+  },
 });

@@ -182,9 +182,12 @@ const ChatScreen = ({navigation}) => {
 
       let token;
       if (route.params.item) {
+        console.log("token1");
         token = route.params.item.token;
       } else if (route.params.data) {
+        console.log("token2");
         token = route.params.data.token;
+        console.log(route.params.data.token);
       }
 
       const message = {
@@ -196,12 +199,6 @@ const ChatScreen = ({navigation}) => {
         createdAt: firestore.Timestamp.fromDate(msg.createdAt),
         user: msg.user,
       };
-      if (userDetails) {
-        console.log(userDetails.firstName, '...userDetails.firstName1');
-        console.log(userDetails.lastName, '...userDetails.lastName1');
-      } else {
-        console.log('User details are null');
-      }
 
       try {
         await Promise.all([
@@ -222,8 +219,6 @@ const ChatScreen = ({navigation}) => {
               ...message,
               firstName: route.params.item?.firstName || firstName,
               lastName: route.params.item?.lastName || lastName,
-              // firstName: userDetails.firstName,
-              // lastName: userDetails.lastName,
             }),
         ]);
 
@@ -256,7 +251,9 @@ const ChatScreen = ({navigation}) => {
                 route.params.item.lastName || route.params.data.lastName,
               profilePicture: profilePictureReceiver,
             });
-          } else {
+            // console.log(firstName, lastName, profilePicture, "..firstName, lastName, profilePicture in chat ref1");
+          } 
+          else {
             chatUsersRef1.set({
               ...message,
               firstName:
@@ -265,6 +262,7 @@ const ChatScreen = ({navigation}) => {
                 route.params.item.lastName || route.params.data.lastName,
               profilePicture: profilePictureReceiver,
             });
+            // console.log(firstName, lastName, profilePicture, "..firstName, lastName, profilePicture in chat ref1");
           }
         });
 
@@ -277,6 +275,7 @@ const ChatScreen = ({navigation}) => {
         chatUsersRef2.get().then(async res => {
           const firstName = await AsyncStorage.getItem('FNAME');
           const lastName = await AsyncStorage.getItem('LNAME');
+          console.log(firstName, lastName, "firstName, lastName in chat ref2");
           const profilePictureString = await AsyncStorage.getItem(
             'PROFILE_PIC',
           );
@@ -295,7 +294,9 @@ const ChatScreen = ({navigation}) => {
               // || route.params.data.lastName,
               profilePic: profilePicture,
             });
-          } else {
+            console.log(firstName, lastName, profilePic, "..firstName, lastName, profilePic in chat ref2");
+          } 
+          else {
             chatUsersRef2.set({
               ...message,
               firstName: firstName,
@@ -381,7 +382,7 @@ const ChatScreen = ({navigation}) => {
             avatar: avatar,
           }}
           renderChatEmpty={renderChatEmpty}
-          // keyExtractor={message => message._id.toString()}
+          keyExtractor={message => message._id.toString()}
         />
       </View>
     </View>

@@ -41,6 +41,7 @@ const Chats = ({navigation}) => {
             ...docsnap.data(),
           };
         });
+        console.log(allMsg,"allMsg");
         setChattedUsers(allMsg);
         setUserId(userId);
       });
@@ -119,17 +120,18 @@ const Chats = ({navigation}) => {
                   <Image
                     source={{uri: item.profilePic.path}}
                     style={{
-                      marginBottom: 12,
-                      borderRadius: 30,
-                      height: 56,
-                      width: 56,
-                    }}
+                     marginBottom: 12,
+                     borderRadius: 30,
+                    height: 56,
+                    width: 56,
+                   }}
                   />
                 </TouchableOpacity>
-              ) : item.profilePic ? (
+              ) 
+              : item.profilePic ? (
                 <TouchableOpacity activeOpacity={0.7}>
                   <Image
-                    source={{uri: item.profilePicture}}
+                    source={{uri: item.profilePic}}
                     style={{
                       marginBottom: 12,
                       borderRadius: 30,

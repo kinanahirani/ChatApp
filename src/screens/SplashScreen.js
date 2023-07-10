@@ -25,8 +25,8 @@ const SplashScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-          <Text style={{color:'black', fontWeight:'bold', fontSize:40}}>Chateo</Text>
-          {/* <Image source={require('../images/logo.png')} style={styles.logo} /> */}
+          {/* <Text style={{color:'black', fontWeight:'bold', fontSize:40}}>Chateo</Text> */}
+          <Image source={require('../images/logo.png')} style={styles.logo} />
       </View>
     </View>
   );

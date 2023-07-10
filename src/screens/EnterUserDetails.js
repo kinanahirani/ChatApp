@@ -37,29 +37,55 @@ const EnterUserDetails = ({navigation}) => {
   const [lastName, setLastName] = useState('');
   const [profilePicture, setProfilePicture] = useState(null);
 
+  // const fetchUserDetails = async () => {
+  //   try {
+  //     const userId = await AsyncStorage.getItem('USER_ID');
+  //     const userRef = firestore().collection('users').doc(userId);
+  //     const userDoc = await userRef.get();
+
+  //     if (userDoc.exists) {
+  //       const userData = userDoc.data();
+  //       const fetchedFirstName = userData.firstName || '';
+  //       const fetchedLastName = userData.lastName || '';
+  //       const fetchedProfilePic = userData.profilePicture || null;
+  
+  //       setFirstName(fetchedFirstName);
+  //       setLastName(fetchedLastName);
+
+  //       if (fetchedProfilePic) {
+  //         const response = await fetch(fetchedProfilePic);
+  //         const blob = await response.blob();
+  //         const profilePictureObject = {
+  //           path: fetchedProfilePic,
+  //           data: blob._data,
+  //         };
+  //         setProfilePicture(profilePictureObject);
+  //       }
+  //     } else {
+  //       console.log('User document does not exist');
+  //     }
+  //   } catch (error) {
+  //     console.log('Error fetching user details from Firestore:', error);
+  //   }
+  // };
+
   const fetchUserDetails = async () => {
     try {
       const userId = await AsyncStorage.getItem('USER_ID');
       const userRef = firestore().collection('users').doc(userId);
       const userDoc = await userRef.get();
-
+  
       if (userDoc.exists) {
         const userData = userDoc.data();
         const fetchedFirstName = userData.firstName || '';
         const fetchedLastName = userData.lastName || '';
         const fetchedProfilePic = userData.profilePicture || null;
-
+  
         setFirstName(fetchedFirstName);
         setLastName(fetchedLastName);
-
+  
         if (fetchedProfilePic) {
-          const response = await fetch(fetchedProfilePic);
-          const blob = await response.blob();
-          const profilePictureObject = {
-            path: fetchedProfilePic,
-            data: blob._data,
-          };
-          setProfilePicture(profilePictureObject);
+          setProfilePicture({ path: fetchedProfilePic });
         }
       } else {
         console.log('User document does not exist');
@@ -68,6 +94,7 @@ const EnterUserDetails = ({navigation}) => {
       console.log('Error fetching user details from Firestore:', error);
     }
   };
+  
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -117,10 +144,11 @@ const EnterUserDetails = ({navigation}) => {
       }
 
       if (profilePicture) {
-        await AsyncStorage.setItem(
-          'PROFILE_PIC',
-          profilePicture,
-        );
+        // await AsyncStorage.setItem(
+        //   'PROFILE_PIC',
+        //   profilePicture,
+        // );
+        await AsyncStorage.setItem('PROFILE_PIC', JSON.stringify(profilePicture));
         updateData.profilePicture = profilePicture;
       }
 
