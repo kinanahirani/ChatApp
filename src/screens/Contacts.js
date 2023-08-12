@@ -125,7 +125,7 @@ const Contacts = ({navigation}) => {
                   <TouchableOpacity
                     activeOpacity={0.6}
                     onPress={() =>
-                      navigation.navigate('Chat screen', {item: item, id: id, screen:'contact'})
+                      navigation.navigate('Chat screen', {item: item, id: id})
                     }>
                     <View style={{marginLeft: 16}}>
                       <Text

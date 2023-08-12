@@ -279,8 +279,10 @@ const ChatScreen = ({navigation}) => {
           const profilePictureString = await AsyncStorage.getItem(
             'PROFILE_PIC',
           );
+          
           let profilePicture;
           if (profilePictureString) {
+            console.log("in profile string");
             profilePicture = JSON.parse(profilePictureString);
           } else {
             profilePicture = defaultImg;
@@ -292,9 +294,9 @@ const ChatScreen = ({navigation}) => {
               // || route.params.data.firstName,
               lastName: lastName,
               // || route.params.data.lastName,
-              profilePic: profilePicture,
+              profilePic: profilePicture.path,
             });
-            console.log(firstName, lastName, profilePic, "..firstName, lastName, profilePic in chat ref2");
+            // console.log(firstName, lastName, profilePic, "..firstName, lastName, profilePic in chat ref2");
           } 
           else {
             chatUsersRef2.set({
@@ -303,7 +305,7 @@ const ChatScreen = ({navigation}) => {
               // || route.params.data.firstName,
               lastName: lastName,
               // || route.params.data.lastName,
-              profilePic: profilePicture,
+              profilePic: profilePicture.path,
             });
           }
         });

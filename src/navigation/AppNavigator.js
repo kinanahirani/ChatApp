@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from '../screens/SplashScreen';
 import Chats from '../screens/Chats';
-// import CustomChatScreen from '../screens/CustomChatScreen';
+import CustomChatScreen from '../screens/CustomChatScreen';
 
 const Stack=createNativeStackNavigator();
 
